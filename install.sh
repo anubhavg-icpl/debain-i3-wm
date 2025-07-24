@@ -45,12 +45,12 @@ sudo apt update && sudo apt upgrade -y
 # Install base packages
 echo "Installing i3 and essential packages..."
 sudo apt install -y \
-    i3 i3status i3lock xorg lightdm rofi firefox gnome-terminal \
+    i3 i3status i3lock xorg lightdm rofi firefox alacritty xfce4-terminal \
     thunar network-manager-gnome cups xfce4-power-manager conky-all \
     htop pulseaudio pavucontrol alsa-utils xbindkeys arandr \
     xbacklight feh compton snapd numlockx unclutter cmus ufw \
     rxvt-unicode xclip curl wget git pasystray paprefs pavumeter \
-    pulseaudio-module-zeroconf playerctl
+    pulseaudio-module-zeroconf playerctl nano
 
 # Install i3-gaps dependencies
 echo "Installing i3-gaps dependencies..."
@@ -84,7 +84,76 @@ if ask_user "Do you want to setup URxvt terminal with extensions?"; then
     cp deprecated/url-select ~/.urxvt/ext/
     
     # Create .Xresources
-    cat > ~/.Xresources << 'EOF'
+    cat > ~/.Xresources << 'EOF
+
+# Create keybindings reference file
+echo "Creating keybindings reference file..."
+cat > ~/.config/i3/keybindings << 'EOF'
+# i3 Keybindings Reference - EndeavourOS Style
+
+## Basic Controls
+Super+Return        - Open terminal (Alacritty)
+Super+q             - Kill focused window
+Super+d             - Application launcher (Rofi)
+Super+t             - Window switcher
+Super+l             - Lock screen
+F1                  - Show keybinding help
+Super+F1            - Edit this keybindings file
+
+## Window Focus (EndeavourOS style: j,k,b,o)
+Super+j             - Focus left
+Super+k             - Focus down  
+Super+b             - Focus up
+Super+o             - Focus right
+Super+Arrow Keys    - Focus in direction
+
+## Move Windows
+Super+Shift+j       - Move window left
+Super+Shift+k       - Move window down
+Super+Shift+b       - Move window up
+Super+Shift+o       - Move window right
+Super+Shift+Arrows  - Move window in direction
+
+## Layout Controls
+Super+h             - Split horizontal
+Super+v             - Split vertical
+Super+f             - Fullscreen toggle
+Super+s             - Stacking layout
+Super+g             - Tabbed layout
+Super+e             - Toggle split layout
+Super+Shift+Space   - Toggle floating
+Super+Space         - Focus toggle (tiling/floating)
+Super+a             - Focus parent container
+
+## Workspaces
+Super+1-10          - Switch to workspace 1-10
+Super+Shift+1-10    - Move container to workspace 1-10
+
+## System Controls
+Super+Shift+c       - Reload i3 config
+Super+Shift+r       - Restart i3
+Super+Shift+e       - Exit i3
+
+## Resize Mode
+Super+r             - Enter resize mode
+  In resize mode:
+  j,k,b,o or Arrows - Resize window
+  Enter/Escape      - Exit resize mode
+
+## Applications
+Super+w             - Firefox (new)
+Super+n             - Thunar file manager (new)
+Super+p             - Audio control (PulseAudio)
+Super+i             - Firefox (legacy)
+Alt+e               - Thunar (legacy)
+
+## Media Keys
+XF86AudioRaiseVolume  - Volume up
+XF86AudioLowerVolume  - Volume down
+XF86AudioMute         - Toggle mute
+XF86MonBrightnessUp   - Brightness up
+XF86MonBrightnessDown - Brightness down
+EOF'
 !! Colorscheme
 *.foreground: #93a1a1
 *.background: #141c21
@@ -165,49 +234,70 @@ fi
 # Create i3 config
 echo "Creating i3 configuration..."
 cat > ~/.config/i3/config << 'EOF'
-# i3 config file (v4) for Ubuntu
+# i3 config file (v4) - Updated with EndeavourOS keybindings and Alacritty
 set $mod Mod4
 set $alt Mod1
-
 font pango:DejaVu Sans Mono 10
 floating_modifier $mod
 
-# Keybindings
-bindsym $mod+Return exec gnome-terminal
-bindsym $alt+F4 kill
+# Keybindings - EndeavourOS Style
+# Terminal - Using Alacritty as requested
+bindsym $mod+Return exec alacritty
+
+# Kill focused window (EndeavourOS: Mod+q instead of Alt+F4)
+bindsym $mod+q kill
+
+# Application menu search (Rofi)
 bindsym $mod+d exec --no-startup-id rofi -show run
 
-# Focus
+# Window switcher menu (fancy Rofi menu)
+bindsym $mod+t exec --no-startup-id rofi -show window
+
+# Lock screen
+bindsym $mod+l exec --no-startup-id i3lock
+
+# Keybinding help menus
+bindsym F1 exec --no-startup-id rofi -show keys
+bindsym $mod+F1 exec --no-startup-id xfce4-terminal -e 'nano ~/.config/i3/keybindings'
+
+# Focus - EndeavourOS style (j,k,b,o instead of j,k,l,semicolon)
 bindsym $mod+j focus left
 bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
+bindsym $mod+b focus up
+bindsym $mod+o focus right
+
+# Arrow key alternatives for focus
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
-# Move windows  
+# Move windows - EndeavourOS style (j,k,b,o)
 bindsym $mod+Shift+j move left
 bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move up
-bindsym $mod+Shift+semicolon move right
+bindsym $mod+Shift+b move up
+bindsym $mod+Shift+o move right
+
+# Arrow key alternatives for moving
 bindsym $mod+Shift+Left move left
 bindsym $mod+Shift+Down move down
 bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
-# Layout
+# Layout controls
 bindsym $mod+h split h
 bindsym $mod+v split v
 bindsym $mod+f fullscreen toggle
 bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
+bindsym $mod+g layout tabbed
 bindsym $mod+e layout toggle split
 
-# Floating
+# Floating controls
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
+
+# Focus parent container
+bindsym $mod+a focus parent
 
 # Workspaces
 set $ws1 "1"
@@ -221,6 +311,7 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
+# Switch to workspace
 bindsym $mod+1 workspace $ws1
 bindsym $mod+2 workspace $ws2
 bindsym $mod+3 workspace $ws3
@@ -232,6 +323,7 @@ bindsym $mod+8 workspace $ws8
 bindsym $mod+9 workspace $ws9  
 bindsym $mod+0 workspace $ws10
 
+# Move container to workspace
 bindsym $mod+Shift+1 move container to workspace $ws1
 bindsym $mod+Shift+2 move container to workspace $ws2
 bindsym $mod+Shift+3 move container to workspace $ws3
@@ -243,17 +335,17 @@ bindsym $mod+Shift+8 move container to workspace $ws8
 bindsym $mod+Shift+9 move container to workspace $ws9
 bindsym $mod+Shift+0 move container to workspace $ws10
 
-# System
+# System controls
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'"
 
-# Resize mode
+# Resize mode - Updated with EndeavourOS style keys
 mode "resize" {
     bindsym j resize shrink width 10 px or 10 ppt
     bindsym k resize grow height 10 px or 10 ppt
-    bindsym l resize shrink height 10 px or 10 ppt
-    bindsym semicolon resize grow width 10 px or 10 ppt
+    bindsym b resize shrink height 10 px or 10 ppt
+    bindsym o resize grow width 10 px or 10 ppt
     bindsym Left resize shrink width 10 px or 10 ppt
     bindsym Down resize grow height 10 px or 10 ppt
     bindsym Up resize shrink height 10 px or 10 ppt
@@ -270,7 +362,14 @@ bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ to
 bindsym XF86MonBrightnessUp exec --no-startup-id xbacklight -inc 10
 bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 10
 
-# App shortcuts
+# Audio redirect to headphones
+bindsym $mod+p exec --no-startup-id pavucontrol
+
+# App shortcuts - EndeavourOS style
+bindsym $mod+w exec firefox
+bindsym $mod+n exec thunar
+
+# Legacy app shortcuts (keeping for compatibility)
 bindsym $mod+i exec firefox
 bindsym $alt+e exec thunar
 
@@ -294,7 +393,7 @@ exec_always --no-startup-id feh --bg-scale ~/Pictures/wallpaper.jpg
 for_window [class="^.*"] border pixel 2
 assign [class="Firefox"] $ws2
 
-# i3-gaps
+# i3-gaps configuration
 gaps inner 10
 gaps outer 5
 smart_gaps on
@@ -376,14 +475,27 @@ echo "2. At login screen, select 'i3' session"
 echo "3. After login, press Super+Enter for terminal"
 echo ""
 echo "Key shortcuts:"
+echo "• Super+Return: Terminal (Alacritty)"
 echo "• Super+d: Application launcher (rofi)"
-echo "• Super+i: Firefox"  
-echo "• Alt+e: File manager (Thunar)"
-echo "• Super+Enter: Terminal"
+echo "• Super+t: Window switcher"
+echo "• Super+w: Firefox"  
+echo "• Super+n: File manager (Thunar)"
+echo "• Super+p: Audio control (PulseAudio)"
+echo "• Super+l: Lock screen"
+echo "• Super+q: Close window"
 echo "• Super+1-10: Switch workspaces"
 echo "• Super+Shift+1-10: Move window to workspace"
 echo "• Super+r: Resize mode"
-echo "• Alt+F4: Close window"
+echo "• F1: Show keybinding help"
+echo "• Super+F1: Edit keybindings file"
+echo ""
+echo "Focus/Movement (EndeavourOS style):"
+echo "• Super+j/k/b/o: Focus left/down/up/right"
+echo "• Super+Shift+j/k/b/o: Move window left/down/up/right"
+echo ""
+echo "Legacy shortcuts (still work):"
+echo "• Super+i: Firefox"
+echo "• Alt+e: File manager"
 echo ""
 echo "URxvt shortcuts (if installed):"
 echo "• Alt+c: Copy"
